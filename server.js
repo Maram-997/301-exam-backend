@@ -8,8 +8,8 @@ const cors = require('cors')
 server.use(cors())
 server.use(express.json())
 const mongoose = require('mongoose');
-const PORT =  3001
-mongoose.connect('mongodb://marram997:amaZayn9962@cluster0-shard-00-00.l9eqf.mongodb.net:27017,cluster0-shard-00-01.l9eqf.mongodb.net:27017,cluster0-shard-00-02.l9eqf.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-wb8qo3-shard-0&authSource=admin&retryWrites=true&w=majority', {useNewUrlParser: true, useUnifiedTopology: true});
+const PORT =  process.env.PORT
+mongoose.connect(process.env.MONGODB, {useNewUrlParser: true, useUnifiedTopology: true});
 
 const colorSchema = mongoose.Schema({
     title:String,
@@ -26,18 +26,18 @@ const userModel = mongoose.model('colors', userSchema)
 function seedColloection () {
 let maram = new userModel({
     email:'maramabumurad97@gmail.com',
-    colors:{
+    colors:[{
         title:'Black',
         imageUrl: "http://www.colourlovers.com/img/000000/100/100/Black.png"
-    }
+    }]
 })
 
 let razan  = new userModel({
     email:'quraanrazan282@gmail.com',
-    colors:{
+    colors:[{
         title:'Black',
         imageUrl: "http://www.colourlovers.com/img/000000/100/100/Black.png"
-    }
+    }]
 })
 
 maram.save()
@@ -58,7 +58,7 @@ server.get('/colors', async (req, res)=>{
     let result = await axios.get(url)
     console.log(result)
     let apiData = result.data.map (element =>{
-        return new ColorsClass ( elemnt.title, element.imageUrl)
+        return new ColorsClass ( element.title, element.imageUrl)
     })
     res.send(apiData)
 })
@@ -66,7 +66,7 @@ server.get('/colors', async (req, res)=>{
 server.post('/addtofav', (req,res)=>{
     let email = req.query.email
     const {title,imageUrl} = req.body
-userModel.colors.find({email:email}, (error, data)=>{
+userModel.find({email:email}, (error, data)=>{
     if (error){
         res.send(error)
     }else{
@@ -82,7 +82,7 @@ userModel.colors.find({email:email}, (error, data)=>{
 ///////////////////////////////////////////////////////
 server.get('/favs', (req,res)=>{
 let email = req.query.email
-userModel.colors.find({email:email},(error, data)=>{
+userModel.find({email:email},(error, data)=>{
     if (error){
         res.send(error)
     }else{
@@ -94,8 +94,9 @@ res.send(data[0].colors)
 
 server.delete('/deleteColor/:idx', (req, res)=>{
     let email = req.query.email
-    let index = req.params.idx
-    userModel.colors.find({email:email}, (error, data)=>{
+    let index = Number(req.params.idx)
+    console.log(email, '---', index);
+    userModel.find({email:email}, (error, data)=>{
         if (error){
             res.send(error)
         } else {
@@ -113,7 +114,7 @@ server.put('/updatecolor/:idx',(req, res)=>{
     let email = req.query.email
     let index = req.params.idx
     const {title,imageUrl} = req.body
-    userModel.colors.find({email:email}, (error, data)=>{
+    userModel.find({email:email}, (error, data)=>{
         if (error){
             res.send(error)
         }else{
